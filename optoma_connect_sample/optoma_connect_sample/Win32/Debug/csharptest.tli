@@ -1,0 +1,18 @@
+﻿// Created by Microsoft (R) C/C++ Compiler Version 14.29.30146.0 (048e9805).
+//
+// C:\Users\hy728\桌面\optoma_connect_sample_2022_09_01\optoma_connect_sample\optoma_connect_sample\Win32\Debug\csharptest.tli
+//
+// Wrapper implementations for Win32 type library C:\Users\hy728\桌面\CsharpTest\CsharpTest\bin\Debug\CsharpTest.tlb
+// compiler-generated file created 10/12/22 at 15:52:56 - DO NOT EDIT!
+
+#pragma once
+
+//
+// interface IMyClass wrapper method implementations
+//
+
+inline HRESULT IMyClass::Main ( ) {
+    HRESULT _hr = raw_Main();
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
