@@ -304,7 +304,7 @@ void triggerscan()
 	return;
 }
 
-map<string, string> shownetworks(map<string, string> wifiNameMap) 
+map<string, string> findWifiInfor(map<string, string> wifiNameMap)
 {
 	HRESULT result = 0;								//HRESULT to store the result of Wlan API calls
 	HANDLE wlanHandle = NULL;						//HANDLE to the Wlan API
@@ -387,8 +387,61 @@ map<string, string> shownetworks(map<string, string> wifiNameMap)
 	WlanFreeMemory(interfaces);						//Pointer to the PWLAN_WLAN_INTERFACE_INFO_LIST data
 	WlanCloseHandle(wlanHandle, NULL);				//The Wlan HANDLE and a Reserved value
 	triggerscan();
-	return wifiNameMap; 
+	return wifiNameMap;
 }
+
+
+
+void printBlueToothDevices()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		CoInitialize(NULL);
+		IMyClassPtr obj;
+		obj.CreateInstance(__uuidof(MyClass));
+		obj->Main();
+		CoUninitialize();
+	}
+}
+
+void printWifiDevices()
+{
+	Sleep(10000);
+	vector<map<string, string>> wifiNameList;
+	for (int i = 0; i < 5; i++)
+	{
+		wifiNameList.push_back(findWifiInfor({}));
+	}
+
+	cout << "WPS1111: ";
+	for (int i = 0; i < 4; i++)
+	{
+		if (wifiNameList[i].find("WPS1111") != wifiNameList[i].end())
+		{
+			cout << wifiNameList[i]["WPS1111"] << ",";
+		}
+	}
+	if (wifiNameList[4].find("WPS1111") != wifiNameList[4].end())
+	{
+		cout << wifiNameList[4]["WPS1111"];
+	}
+	cout << endl;
+
+	cout << "WPS2222: ";
+	for (int i = 0; i < 4; i++)
+	{
+		if (wifiNameList[i].find("WPS2222") != wifiNameList[i].end())
+		{
+			cout << wifiNameList[i]["WPS2222"] << ",";
+		}
+	}
+	if (wifiNameList[4].find("WPS2222") != wifiNameList[4].end())
+	{
+		cout << wifiNameList[4]["WPS2222"];
+	}
+	cout << endl;
+}
+
 
 
 
@@ -449,48 +502,32 @@ int main()
 			case '4': //自己加的
 			{
 				//exeFunInPer();
-				while (true)
-				{
-					cout << "Scanning..." << endl;
-					vector<map<string, string>> wifiNameList;
-					for (int i = 0; i < 5; i++)
-					{
-						wifiNameList.push_back(shownetworks({}));
-					}
+				//while (true)
+				//{
+				cout << "Scanning..." << endl;
+				std::thread first(printBlueToothDevices);
+				std::thread second(printWifiDevices);
+				first.join();
+				second.join();
+				/*printBlueToothDevices();
+				printWifiDevices();*/
 
-					
-					cout << "WPS1111: ";
-					for (int i = 0; i < 4; i++)
-					{
-						if (wifiNameList[i].find("WPS1111") != wifiNameList[i].end())
-						{
-							cout << wifiNameList[i]["WPS1111"] << ",";
-						}			
-					}
-					if (wifiNameList[4].find("WPS1111") != wifiNameList[4].end())
-					{
-						cout << wifiNameList[4]["WPS1111"];
-					}
-					cout << endl;
-
-					cout << "WPS2222: ";
-					for (int i = 0; i < 4; i++)
-					{
-						if (wifiNameList[i].find("WPS2222") != wifiNameList[i].end())
-						{
-							cout << wifiNameList[i]["WPS2222"] << ",";
-						}
-					}
-					if (wifiNameList[4].find("WPS2222") != wifiNameList[4].end())
-					{
-						cout << wifiNameList[4]["WPS2222"];
-					}
-					cout << endl;
-
-				}
+				//}
 				break;
 			}
-
+			case '5':
+			{
+				cout << "Scanning..." << endl;
+				for (int i = 0; i < 3; i++)
+				{
+					CoInitialize(NULL);
+					IMyClassPtr obj;
+					obj.CreateInstance(__uuidof(MyClass));
+					obj->Main();
+					CoUninitialize();
+				}
+				Sleep(1000);
+			}
 			case '0':
 			default:
 				break;
@@ -521,3 +558,5 @@ int main()
 //   4. 使用 [錯誤清單] 視窗，檢視錯誤
 //   5. 前往 [專案] > [新增項目]，建立新的程式碼檔案，或是前往 [專案] > [新增現有項目]，將現有程式碼檔案新增至專案
 //   6. 之後要再次開啟此專案時，請前往 [檔案] > [開啟] > [專案]，然後選取 .sln 檔案
+
+
