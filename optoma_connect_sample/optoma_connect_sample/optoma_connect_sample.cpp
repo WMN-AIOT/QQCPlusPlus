@@ -24,12 +24,14 @@
 #pragma comment(lib, "wlanapi.lib")
 
 using namespace std;
-#define N 100
 
 
 void triggerscan();							//Triggers a scan on each wireless network interface
 void wlanInit(HANDLE& wlanHandle, PWLAN_INTERFACE_INFO_LIST& interfaces);			//Function to open the Wlan API handle and gets interface info
 void wlanCallback(WLAN_NOTIFICATION_DATA* scanNotificationData, PVOID myContext);	//Function to receive callback notifications for the wireless network scanning
+string device1 = "WPS1111";
+string device2 = "WPS2222";
+
 
 //Context to pass along with callbacks
 typedef struct _WLAN_CALLBACK_INFO {
@@ -350,7 +352,7 @@ map<string, string> findWifiInfor(map<string, string> wifiNameMap)
 			}
 
 
-			if (wifiName == "WPS1111" && wifiNameMap.find("WPS1111") == wifiNameMap.end())
+			if (wifiName == device1 && wifiNameMap.find(device1) == wifiNameMap.end())
 			{
 				if (networks->Network[num].wlanSignalQuality == 0)
 					iRSSI = -100;
@@ -359,9 +361,9 @@ map<string, string> findWifiInfor(map<string, string> wifiNameMap)
 				else
 					iRSSI = -100 + (networks->Network[num].wlanSignalQuality / 2);
 				WPS1111RSSI = to_string(iRSSI);
-				wifiNameMap["WPS1111"] = WPS1111RSSI;
+				wifiNameMap[device1] = WPS1111RSSI;
 			}
-			else if (wifiName == "WPS2222" && wifiNameMap.find("WPS2222") == wifiNameMap.end())
+			else if (wifiName == device2 && wifiNameMap.find(device2) == wifiNameMap.end())
 			{
 				if (networks->Network[num].wlanSignalQuality == 0)
 					iRSSI = -100;
@@ -371,7 +373,7 @@ map<string, string> findWifiInfor(map<string, string> wifiNameMap)
 					iRSSI = -100 + (networks->Network[num].wlanSignalQuality / 2);
 				WPS2222RSSI = to_string(iRSSI);
 				findWPS2222 = true;
-				wifiNameMap["WPS2222"] = WPS2222RSSI;
+				wifiNameMap[device2] = WPS2222RSSI;
 			}
 
 
@@ -391,54 +393,110 @@ map<string, string> findWifiInfor(map<string, string> wifiNameMap)
 }
 
 
+map<string, string> findBlueToothInfor(map<string, string> blueToothNameMap)
+{
+	CoInitialize(NULL);
+	IMyClassPtr obj;
+	obj.CreateInstance(__uuidof(MyClass));
+
+	int current = 0; //最初由 0 的位置開始找
+	int next;
+	vector<string> buf;
+	_bstr_t bstr;
+	string s;
+	s = (LPCSTR)obj->Main();
+
+	while (1)
+	{
+		next = s.find_first_of(" ", current);
+		if (next != current)
+		{
+			string tmp = s.substr(current, next - current);
+			if (tmp.size() != 0)
+				buf.push_back(tmp);
+		}
+		if (next == string::npos) break;
+		current = next + 1;
+	}
+
+	CoUninitialize();
+
+	blueToothNameMap[device1] = buf[0];
+	blueToothNameMap[device2] = buf[1];
+
+	return blueToothNameMap;
+}
+
 
 void printBlueToothDevices()
 {
+	vector<map<string, string>> blueToothNameList;
+
 	for (int i = 0; i < 3; i++)
 	{
-		CoInitialize(NULL);
-		IMyClassPtr obj;
-		obj.CreateInstance(__uuidof(MyClass));
-		obj->Main();
-		CoUninitialize();
+		blueToothNameList.push_back(findBlueToothInfor({}));
 	}
+	cout << "BlueTooth scanning results:" << endl;
+
+	cout << device1 << ": ";
+	for (int i = 0; i < 2; i++)
+	{
+		cout << blueToothNameList[i][device1] << ",";
+	}
+	cout << blueToothNameList[2][device1] << endl;
+
+	cout << device2 << ": ";
+	for (int i = 0; i < 2; i++)
+	{
+		cout << blueToothNameList[i][device2] << ",";
+	}
+	cout << blueToothNameList[2][device2] << endl;
+
+	cout << endl;
+	/*CoInitialize(NULL);
+	IMyClassPtr obj;
+	obj.CreateInstance(__uuidof(MyClass));
+	cout<<obj->Main()<<endl;
+	CoUninitialize();*/
 }
 
 void printWifiDevices()
 {
-	Sleep(10000);
+	Sleep(5000);
 	vector<map<string, string>> wifiNameList;
 	for (int i = 0; i < 5; i++)
 	{
 		wifiNameList.push_back(findWifiInfor({}));
 	}
+	cout << "Wifi scanning results:" << endl;
 
-	cout << "WPS1111: ";
+	cout << device1 << ": ";
 	for (int i = 0; i < 4; i++)
 	{
-		if (wifiNameList[i].find("WPS1111") != wifiNameList[i].end())
+		if (wifiNameList[i].find(device1) != wifiNameList[i].end())
 		{
-			cout << wifiNameList[i]["WPS1111"] << ",";
+			cout << wifiNameList[i][device1] << ",";
 		}
 	}
-	if (wifiNameList[4].find("WPS1111") != wifiNameList[4].end())
+	if (wifiNameList[4].find(device1) != wifiNameList[4].end())
 	{
-		cout << wifiNameList[4]["WPS1111"];
+		cout << wifiNameList[4][device1];
 	}
 	cout << endl;
 
-	cout << "WPS2222: ";
+	cout << device2 << ": ";
 	for (int i = 0; i < 4; i++)
 	{
-		if (wifiNameList[i].find("WPS2222") != wifiNameList[i].end())
+		if (wifiNameList[i].find(device2) != wifiNameList[i].end())
 		{
-			cout << wifiNameList[i]["WPS2222"] << ",";
+			cout << wifiNameList[i][device2] << ",";
 		}
 	}
-	if (wifiNameList[4].find("WPS2222") != wifiNameList[4].end())
+	if (wifiNameList[4].find(device2) != wifiNameList[4].end())
 	{
-		cout << wifiNameList[4]["WPS2222"];
+		cout << wifiNameList[4][device2];
 	}
+	cout << endl;
 	cout << endl;
 }
 
@@ -458,8 +516,7 @@ int main()
 			std::cout << "1 : List Devices\n";
 			std::cout << "2 : Connect\n";
 			std::cout << "3 : Disconnect\n";
-			std::cout << "4 : Searching for wifi\n"; //自己加的
-			std::cout << "5 : Searching for bluetooth\n"; //自己加的
+			std::cout << "4 : Searching for rssi\n"; //自己加的
 			std::cout << "0 : Exit\n";
 			std::cout << "Enter a command : \n";
 			std::getline(std::cin, s);
@@ -515,19 +572,6 @@ int main()
 				//}
 				break;
 			}
-			case '5':
-			{
-				cout << "Scanning..." << endl;
-				for (int i = 0; i < 3; i++)
-				{
-					CoInitialize(NULL);
-					IMyClassPtr obj;
-					obj.CreateInstance(__uuidof(MyClass));
-					obj->Main();
-					CoUninitialize();
-				}
-				Sleep(1000);
-			}
 			case '0':
 			default:
 				break;
@@ -558,5 +602,7 @@ int main()
 //   4. 使用 [錯誤清單] 視窗，檢視錯誤
 //   5. 前往 [專案] > [新增項目]，建立新的程式碼檔案，或是前往 [專案] > [新增現有項目]，將現有程式碼檔案新增至專案
 //   6. 之後要再次開啟此專案時，請前往 [檔案] > [開啟] > [專案]，然後選取 .sln 檔案
+
+
 
 
